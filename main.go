@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -16,16 +17,29 @@ func main() {
 	}
 	defer file.Close()
 
+	currentLine := ""
+
 	for {
 		b := make([]byte, 8, 8)
 		n, err := file.Read(b)
 		if err != nil {
 			if err == io.EOF {
+				fmt.Printf("read: %s\n", currentLine)
 				os.Exit(0)
 			}
 			log.Fatal(err)
 		}
 
-		fmt.Printf("read: %s\n", string(b[:n]))
+		readBytes := b[:n]
+		parts := bytes.Split(readBytes, []byte{'\n'})
+
+		for i := 0; i < len(parts)-1; i++ {
+			fmt.Printf("read: %s%s\n", currentLine, string(parts[i]))
+			currentLine = ""
+		}
+
+		currentLine += string(parts[len(parts)-1])
+
 	}
+
 }
